@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Freelance Job Tracker</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; background: #f4f4f4; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, button { padding: 10px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Freelance Job Tracker</h1>
+
+    <input type="text" id="jobName" placeholder="Job Name">
+    <input type="text" id="jobType" placeholder="Type (Hourly/Fixed)">
+    <input type="number" id="jobPay" placeholder="Pay Amount">
+    <button onclick="addJob()">Add Job</button>
+
+    <hr>
+    <ul id="jobList"></ul>
+</div>
+
+<script>
+    const API_URL = '/api/jobs';
+
+    // Load jobs on page start
+    fetchJobs();
+
+    function fetchJobs() {
+        fetch(API_URL)
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('jobList');
+                list.innerHTML = ''; // Clear old list
+                data.forEach(job => {
+                    if(job.name) {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>${job.name}</strong> (${job.type}) - R${job.pay}`;
+                        list.appendChild(li);
+                    }
+                });
+            });
+    }
+
+    function addJob() {
+        const job = {
+            name: document.getElementById('jobName').value,
+            type: document.getElementById('jobType').value,
+            pay: document.getElementById('jobPay').value
+        };
+
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(job)
+        }).then(() => {
+            fetchJobs(); // Refresh the list
+            document.querySelectorAll('input').forEach(i => i.value = ''); // Clear inputs
+        });
+    }
+</script>
+</body>
+</html>
